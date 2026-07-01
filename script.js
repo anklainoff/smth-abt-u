@@ -19,21 +19,19 @@ const CONFIG = {
     "Любимая"
   ],
   
-  // Фотографии и подписи к ним (просто замените файлы на свои)
+  // Фотографии и подписи к ним
   photos: [
     { src: "IMG_3213.jpeg", caption: "Когда-нибудь я обязательно тебя обниму" }
   ],
   
-  // Текстовые блоки между фото
-  textBlocks: [
-    "Самые тёплые воспоминания"
-  ],
+  // Текстовые блоки между фото (пусто)
+  textBlocks: [],
   
   // Заголовок второй страницы
   loveTitle: "Для тебя",
   
-  // Письмо внизу
-  letter: "Дорогая Алёна,\n\nЭтот маленький сайт — просто напоминание о том, как много ты значишь. Здесь собраны тёплые моменты и светлые воспоминания.\n\nСпасибо, что ты есть.",
+  // Письмо внизу (пусто)
+  letter: "",
   
   // Скорость смены приветствия (мс)
   greetingInterval: 4200,
@@ -63,10 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Установка заголовка и письма из настроек
   loveTitle.textContent = CONFIG.loveTitle;
   if (letterTextEl) letterTextEl.textContent = CONFIG.letter;
+  
+  // Если письмо пустое — скрываем контейнер
+  if (!CONFIG.letter) {
+    letterContainer.style.display = 'none';
+  }
 
   // =============== ГЕНЕРАЦИЯ ФОНОВЫХ ЧАСТИЦ ===============
   function createOrbs(layer, count = 5) {
-    // Создаём большие светящиеся шары
     for (let i = 0; i < count; i++) {
       const orb = document.createElement('div');
       orb.className = 'orb';
@@ -79,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
       layer.appendChild(orb);
     }
     
-    // Создаём маленькие частицы
     for (let i = 0; i < 18; i++) {
       const particle = document.createElement('div');
       particle.className = 'particle';
@@ -100,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const orbs = document.querySelectorAll('.orb');
     const particles = document.querySelectorAll('.particle');
     
-    // Начальные позиции для каждого элемента
     const orbPositions = [];
     const particlePositions = [];
     
@@ -123,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     function move() {
-      // Двигаем шары плавно
       orbs.forEach((orb, idx) => {
         const pos = orbPositions[idx];
         pos.x += pos.speedX;
@@ -139,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
         orb.style.transform = `translate(${screenX}px, ${screenY}px)`;
       });
       
-      // Двигаем частицы плавно
       particles.forEach((p, i) => {
         const pos = particlePositions[i];
         pos.x += pos.speedX;
@@ -170,7 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const newGreeting = getRandomItem(CONFIG.greetings);
     const newName = getRandomItem(CONFIG.names);
     
-    // Анимация исчезновения: fade + blur + scale
     greetingText.style.opacity = '0';
     greetingText.style.filter = 'blur(12px)';
     greetingText.style.transform = 'translateY(8px) scale(0.96)';
@@ -178,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
     nameText.style.filter = 'blur(12px)';
     nameText.style.transform = 'translateY(8px) scale(0.96)';
     
-    // Меняем текст и показываем снова
     setTimeout(() => {
       greetingText.textContent = newGreeting;
       nameText.textContent = newName;
@@ -192,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 350);
   }
 
-  // Первый запуск и установка интервала
   updateGreeting();
   setInterval(updateGreeting, CONFIG.greetingInterval);
 
@@ -209,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function transitionToLove() {
-    // Плавный переход: затемнение + размытие
     welcomeScreen.style.transition = 'opacity 0.7s ease, backdrop-filter 0.8s';
     welcomeScreen.style.opacity = '0';
     welcomeScreen.style.backdropFilter = 'blur(20px)';
@@ -218,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
       welcomeScreen.classList.remove('active');
       loveScreen.classList.add('active');
       
-      // Плавное появление второй страницы
       loveScreen.style.opacity = '0';
       loveScreen.style.transition = 'opacity 0.9s ease';
       
@@ -226,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loveScreen.style.opacity = '1';
       }, 60);
       
-      // Строим карточки и текстовые блоки
       buildLoveContent();
     }, 750);
   }
@@ -250,7 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function buildLoveContent() {
     cardsContainer.innerHTML = '';
     
-    // Перемешиваем фото и текстовые блоки
     const items = [];
     CONFIG.photos.forEach((photo, idx) => {
       items.push({ type: 'photo', data: photo, id: `photo-${idx}` });
@@ -259,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // Создаём элементы
     items.forEach(item => {
       if (item.type === 'photo') {
         const card = document.createElement('div');
@@ -279,64 +269,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // Анимируем письмо
-    letterContainer.classList.remove('visible');
+    // Сразу показываем все элементы (без ожидания прокрутки)
     setTimeout(() => {
-      letterContainer.classList.add('visible');
-    }, 200);
-    
-    // Запускаем отслеживание появления элементов
-    observeReveal();
-  }
-
-  // =============== АНИМАЦИЯ ПОЯВЛЕНИЯ ПРИ ПРОКРУТКЕ ===============
-  function observeReveal() {
-    const revealElements = document.querySelectorAll('[data-reveal]');
-    
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
+      document.querySelectorAll('[data-reveal]').forEach(el => {
+        el.classList.add('visible');
       });
-    }, { 
-      threshold: 0.2, 
-      rootMargin: "0px 0px -20px 0px" 
-    });
-    
-    revealElements.forEach(el => observer.observe(el));
-    
-    // Отдельно отслеживаем письмо
-    if (letterContainer && !letterContainer.classList.contains('visible')) {
-      const letterObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            letterContainer.classList.add('visible');
-            letterObserver.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.2 });
-      
-      letterObserver.observe(letterContainer);
-    }
+      if (letterContainer && CONFIG.letter) {
+        letterContainer.classList.add('visible');
+      }
+    }, 100);
   }
-
-  // =============== ПАРАЛЛАКС ПРИ ПРОКРУТКЕ ===============
-  loveContent.addEventListener('scroll', () => {
-    const scrolled = loveContent.scrollTop;
-    
-    // Двигаем картинки с разной скоростью
-    const cards = document.querySelectorAll('.card img');
-    cards.forEach((img, index) => {
-      const speed = 0.03 + index * 0.01;
-      img.style.transform = `translateY(${scrolled * speed}px) scale(1.01)`;
-    });
-    
-    // Лёгкое смещение фона
-    if (loveBgLayer) {
-      loveBgLayer.style.transform = `translateY(${scrolled * 0.015}px)`;
-    }
-  });
 
   // Начальная установка второй страницы
   loveScreen.style.opacity = '0';
